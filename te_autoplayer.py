@@ -11,16 +11,18 @@ class AutoPlayer():
     def next_move(self, gamestate):
         ''' next_move() is called by the game, once per move.
             gamestate supplies access to all the state needed to autoplay the game.'''
-        direction = 0
-        rotation = 0
+        self.random_next_move(gamestate)
+        # direction = 0
+        # rotation = 0
         """ we need to do some thing to get the best direction and rotation
             replace here with some functions (algorithm)  """
 
-        gamestate.move(direction)  # we need to figure out the best direction
-        gamestate.move(rotation)   # we need to figure out the best rotation
+        # gamestate.move(direction)  # we need to figure out the best direction
+        # gamestate.move(rotation)   # we need to figure out the best rotation
 
     def random_next_move(self, gamestate):
-        ''' make a random move and a random rotation.  Not the best strategy! '''
+        ''' make a random move and a random rotation.  Not the best strategy!
+            but i use it to test the gamestate functions '''
         rnd = self.rand.randint(-1, 1)
         if rnd == -1:
             direction = Direction.LEFT
@@ -28,6 +30,10 @@ class AutoPlayer():
             direction = Direction.RIGHT
         if rnd != 0:
             gamestate.move(direction)
+            print("mov: " + str(direction)) #get current movement
+        else:
+            print("mov: 0 ")
+
         rnd = self.rand.randint(-1, 1)
         if rnd == -1:
             direction = Direction.LEFT
@@ -35,17 +41,37 @@ class AutoPlayer():
             direction = Direction.RIGHT
         if rnd != 0:
             gamestate.rotate(direction)
-        gamestate.print_block_tiles()
-        blockType = gamestate.get_falling_block_type()
-        print (blockType)
+            print("rot: " + str(direction)) #get current rotation  
+        else:
+            print("rot: 0")
+
+        # print single block    
+        """ gamestate.print_block_tiles() """
+        # print type
+        """ blockType = gamestate.get_falling_block_type()
+        print (blockType) """
         # get a whole overview
-        """ print ("new frame")
-        gamestate.print_tiles() """
-    
+        print ("new frame")
+        gamestate.print_tiles()
+        # print the tiles
+        """ tilescopy = gamestate.get_tiles()
+        print(tilescopy) """
+        # print the score
+        """ score = gamestate.get_score()
+        print(score) """ 
+        #print the position
+        #the position is the top left of the boundbox 
+        """ pos = gamestate.get_falling_block_position()
+        print(pos) """ 
+        #print the angle
+        """ ang = gamestate.get_falling_block_angle()
+        print(ang) """
+
+
     def make_clones(self, gamestate):
         for pos in range (0,10): # 10 columns here --- 9 movements
             for rot in range (0,4): # 4 states of rotation ---3 rotations
-                testgs = gamestate.clone()
+                testgs = gamestate.clone(True)
                 score = self.try_move(testgs, pos, rot)
 
                 """ here need pass all the parameters that you need in the test
@@ -79,7 +105,23 @@ class AutoPlayer():
         return self.try_move(gamestate,target_pos,target_rot) # recursion until landed 
 
     def score_position(self, gamestate):
+        """ here is the function to get the score for every cloned gamestate
+        
+            we consider three perspectives:
+            * height
+            * how many holes
+            * Variance (not now)
+        """ 
+
+    def get_highest_mark(self, gamestate, score):
         pass
+
+    def get_height(self, gamestate):
+        pass
+
+    def get_holes(self, gamestate):
+        pass        
+        
         
 
         
