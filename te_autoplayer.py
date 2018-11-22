@@ -11,22 +11,31 @@ class AutoPlayer():
     def next_move(self, gamestate):
         ''' next_move() is called by the game, once per move.
             gamestate supplies access to all the state needed to autoplay the game.'''
-        # self.random_next_move(gamestate)
+        self.random_next_move(gamestate)
+
+        cloneslist, scorelist = self.make_clones(gamestate)
+        # print(cloneslist)
+        # print(scorelist)
+        bestscore, bestindex = self.get_best_score(gamestate,scorelist)
+        # print(bestscore, bestindex)
+        bestgs = cloneslist[bestindex]
+        # print (bestgs)
+        position, _ = bestgs.get_falling_block_position()
+        angle = bestgs.get_falling_block_angle()
+        print (position , angle)
+
         x, _ = gamestate.get_falling_block_position()
         r = gamestate.get_falling_block_angle()
+        # print (x, r)
 
-        _clone_list, score = self.make_clones(gamestate)
-        position, angle = self.get_best_clone(gamestate,_clone_list, score)
-        print(score)
-
-        if x < position:
+        """ if x < position:
             gamestate.move(Direction.RIGHT)
         elif x > position:
             gamestate.move(Direction.LEFT)
         if r < angle:
             gamestate.rotate(Direction.RIGHT) # clockwised 
         elif r > angle:
-            gamestate.rotate(Direction.LEFT) # anti-clockwised """
+            gamestate.rotate(Direction.LEFT) # anti-clockwised  """
         
 
     def random_next_move(self, gamestate):
@@ -39,9 +48,9 @@ class AutoPlayer():
             direction = Direction.RIGHT
         if rnd != 0:
             gamestate.move(direction)
-            print("mov: " + str(direction)) #get current movement
+        """     print("mov: " + str(direction)) #get current movement
         else:
-            print("mov: 0 ")
+            print("mov: 0 ") """
 
         rnd = self.rand.randint(-1, 1)
         if rnd == -1:
@@ -50,9 +59,9 @@ class AutoPlayer():
             direction = Direction.RIGHT
         if rnd != 0:
             gamestate.rotate(direction)
-            print("rot: " + str(direction)) #get current rotation  
+        """     print("rot: " + str(direction)) #get current rotation  
         else:
-            print("rot: 0")
+            print("rot: 0") """
 
         # print single block    
         """ gamestate.print_block_tiles() """
@@ -85,9 +94,10 @@ class AutoPlayer():
             for rot in range (0,4): # 4 states of rotation ---3 rotations
                 testgs = gamestate.clone(True)
                 clones_list.append(testgs)
-                # print(clones_list)
                 score = self.try_move(testgs, pos, rot)
                 score_list.append(score)
+                # print (pos, rot)
+                # print (score)
         return clones_list, score_list
 
         """ here need pass all the parameters that you need in the test
@@ -132,17 +142,14 @@ class AutoPlayer():
         _score = gamestate.get_score()
         return _score
 
-    def get_best_clone(self, gamestate, clonelist, scorelist ):
-        max_score = 0
-        best_clone = None
+    def get_best_score(self, gamestate, scorelist):
+        """ max_score = 0
         for _score in scorelist:
             if _score > max_score:
-                max_score = _score
-                best_clone = _clone
-            
-        position, _ = best_clone.get_falling_block_position()
-        angle = best_clone.get_falling_block_angle()
-        return max_score
+                max_score = _score """
+        max_score = max(scorelist)
+        _index = scorelist.index(max_score)
+        return max_score, _index
          
 
     def get_height(self, gamestate):
