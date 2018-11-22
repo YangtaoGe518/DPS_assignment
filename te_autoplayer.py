@@ -11,18 +11,27 @@ class AutoPlayer():
     def next_move(self, gamestate):
         ''' next_move() is called by the game, once per move.
             gamestate supplies access to all the state needed to autoplay the game.'''
-        self.random_next_move(gamestate)
-        # direction = 0
-        # rotation = 0
-        """ we need to do some thing to get the best direction and rotation
-            replace here with some functions (algorithm)  """
+        # self.random_next_move(gamestate)
+        x, _ = gamestate.get_falling_block_position()
+        r = gamestate.get_falling_block_angle()
 
-        # gamestate.move(direction)  # we need to figure out the best direction
-        # gamestate.move(rotation)   # we need to figure out the best rotation
+        _clone_list, score = self.make_clones(gamestate)
+        position, angle = self.get_best_clone(gamestate,_clone_list, score)
+        print(score)
+
+        if x < position:
+            gamestate.move(Direction.RIGHT)
+        elif x > position:
+            gamestate.move(Direction.LEFT)
+        if r < angle:
+            gamestate.rotate(Direction.RIGHT) # clockwised 
+        elif r > angle:
+            gamestate.rotate(Direction.LEFT) # anti-clockwised """
+        
 
     def random_next_move(self, gamestate):
         ''' make a random move and a random rotation.  Not the best strategy!
-            but i use it to test the gamestate functions '''
+            but I use it to test the gamestate functions '''
         rnd = self.rand.randint(-1, 1)
         if rnd == -1:
             direction = Direction.LEFT
@@ -51,8 +60,8 @@ class AutoPlayer():
         """ blockType = gamestate.get_falling_block_type()
         print (blockType) """
         # get a whole overview
-        print ("new frame")
-        gamestate.print_tiles()
+        """ print ("new frame")
+        gamestate.print_tiles() """
         # print the tiles
         """ tilescopy = gamestate.get_tiles()
         print(tilescopy) """
@@ -69,16 +78,23 @@ class AutoPlayer():
 
 
     def make_clones(self, gamestate):
+        """ make 40 copies of clones """
+        clones_list = []
+        score_list = []
         for pos in range (0,10): # 10 columns here --- 9 movements
             for rot in range (0,4): # 4 states of rotation ---3 rotations
                 testgs = gamestate.clone(True)
+                clones_list.append(testgs)
+                # print(clones_list)
                 score = self.try_move(testgs, pos, rot)
+                score_list.append(score)
+        return clones_list, score_list
 
-                """ here need pass all the parameters that you need in the test
-                    gamestate e.g. score, position rotation, all of them make a
-                    cloned game i.e. have the same values in all parameter
-                """
-         
+        """ here need pass all the parameters that you need in the test
+            gamestate e.g. score, position rotation, all of them make a
+            cloned game i.e. have the same values in all parameter
+        """ 
+        
     def try_move(self, gamestate, target_pos, target_rot):
         """ trymove function is where we test different situations 
             in other words, it is not actually moving 
@@ -94,9 +110,9 @@ class AutoPlayer():
 
         #here is a rotation of angle to target rotation
         if angle < target_rot:
-            gamestate.move(Direction.RIGHT) # clockwised 
+            gamestate.rotate(Direction.RIGHT) # clockwised 
         elif angle > target_rot:
-            gamestate.move(Direction) # anti-clockwised
+            gamestate.rotate(Direction.LEFT) # anti-clockwised
         
         #here is to update the cloned game (NOT in real game)
         is_land = gamestate.update()
@@ -112,9 +128,22 @@ class AutoPlayer():
             * how many holes
             * Variance (not now)
         """ 
+        # the simplest way:
+        _score = gamestate.get_score()
+        return _score
 
-    def get_highest_mark(self, gamestate, score):
-        pass
+    def get_best_clone(self, gamestate, clonelist, scorelist ):
+        max_score = 0
+        best_clone = None
+        for _score in scorelist:
+            if _score > max_score:
+                max_score = _score
+                best_clone = _clone
+            
+        position, _ = best_clone.get_falling_block_position()
+        angle = best_clone.get_falling_block_angle()
+        return max_score
+         
 
     def get_height(self, gamestate):
         pass
