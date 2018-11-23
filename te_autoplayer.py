@@ -11,31 +11,30 @@ class AutoPlayer():
     def next_move(self, gamestate):
         ''' next_move() is called by the game, once per move.
             gamestate supplies access to all the state needed to autoplay the game.'''
-        self.random_next_move(gamestate)
-
-        cloneslist, scorelist = self.make_clones(gamestate)
-        # print(cloneslist)
-        # print(scorelist)
-        bestscore, bestindex = self.get_best_score(gamestate,scorelist)
-        # print(bestscore, bestindex)
-        bestgs = cloneslist[bestindex]
-        # print (bestgs)
-        position, _ = bestgs.get_falling_block_position()
-        angle = bestgs.get_falling_block_angle()
-        print (position , angle)
+        # self.random_next_move(gamestate)
 
         x, _ = gamestate.get_falling_block_position()
         r = gamestate.get_falling_block_angle()
         # print (x, r)
+        cloneslist, scoreslist = self.make_clones(gamestate)
+        # print(cloneslist)
+        # print(scoreslist)
+        bestscore, bestindex = self.get_best_score(gamestate, scoreslist)
+        # print(bestscore, bestindex)
+        bestgs = self.get_best_clone(cloneslist, bestindex)
+        # print (bestgs)
+        position = self.get_best_postion(bestgs)
+        angle = self.get_best_angle(bestgs)
+        print (position , angle)
 
-        """ if x < position:
+        if x < position:
             gamestate.move(Direction.RIGHT)
         elif x > position:
             gamestate.move(Direction.LEFT)
         if r < angle:
             gamestate.rotate(Direction.RIGHT) # clockwised 
         elif r > angle:
-            gamestate.rotate(Direction.LEFT) # anti-clockwised  """
+            gamestate.rotate(Direction.LEFT) # anti-clockwised 
         
 
     def random_next_move(self, gamestate):
@@ -84,7 +83,6 @@ class AutoPlayer():
         #print the angle
         """ ang = gamestate.get_falling_block_angle()
         print(ang) """
-
 
     def make_clones(self, gamestate):
         """ make 40 copies of clones """
@@ -143,14 +141,22 @@ class AutoPlayer():
         return _score
 
     def get_best_score(self, gamestate, scorelist):
-        """ max_score = 0
-        for _score in scorelist:
-            if _score > max_score:
-                max_score = _score """
         max_score = max(scorelist)
         _index = scorelist.index(max_score)
         return max_score, _index
-         
+
+    def get_best_clone(self, clonelist, index):
+        bestgs = clonelist[index]
+        bestgs.clone(False)
+        return bestgs
+
+    def get_best_postion(self, gamestate):
+        bestpos, _ = gamestate.get_falling_block_position()
+        return bestpos     
+
+    def get_best_angle(self, gamestate):
+        bestang = gamestate.get_falling_block_angle()
+        return bestang     
 
     def get_height(self, gamestate):
         pass
