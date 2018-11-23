@@ -12,31 +12,14 @@ class AutoPlayer():
         ''' next_move() is called by the game, once per move.
             gamestate supplies access to all the state needed to autoplay the game.'''
         # self.random_next_move(gamestate)
-
+   
+        position, angle = self.cloned_game(gamestate)
+    
         x, _ = gamestate.get_falling_block_position()
         r = gamestate.get_falling_block_angle()
-        # print (x, r)
-        cloneslist, scoreslist = self.make_clones(gamestate)
-        # print(cloneslist)
-        # print(scoreslist)
-        bestscore, bestindex = self.get_best_score(gamestate, scoreslist)
-        # print(bestscore, bestindex)
-        bestgs = self.get_best_clone(cloneslist, bestindex)
-        # print (bestgs)
-        position = self.get_best_postion(bestgs)
-        angle = self.get_best_angle(bestgs)
-        print (position , angle)
 
-        if x < position:
-            gamestate.move(Direction.RIGHT)
-        elif x > position:
-            gamestate.move(Direction.LEFT)
-        if r < angle:
-            gamestate.rotate(Direction.RIGHT) # clockwised 
-        elif r > angle:
-            gamestate.rotate(Direction.LEFT) # anti-clockwised 
+        self.real_move(gamestate, x, r, position, angle)
         
-
     def random_next_move(self, gamestate):
         ''' make a random move and a random rotation.  Not the best strategy!
             but I use it to test the gamestate functions '''
@@ -84,19 +67,19 @@ class AutoPlayer():
         """ ang = gamestate.get_falling_block_angle()
         print(ang) """
 
-    def make_clones(self, gamestate):
+    def cloned_game(self, gamestate):
         """ make 40 copies of clones """
-        clones_list = []
-        score_list = []
+        _max_score = 0
         for pos in range (0,10): # 10 columns here --- 9 movements
             for rot in range (0,4): # 4 states of rotation ---3 rotations
                 testgs = gamestate.clone(True)
-                clones_list.append(testgs)
                 score = self.try_move(testgs, pos, rot)
-                score_list.append(score)
-                # print (pos, rot)
-                # print (score)
-        return clones_list, score_list
+                if score > _max_score:
+                    _max_score = score
+                    position = pos
+                    angle = rot
+        return position, angle
+
 
         """ here need pass all the parameters that you need in the test
             gamestate e.g. score, position rotation, all of them make a
@@ -138,25 +121,17 @@ class AutoPlayer():
         """ 
         # the simplest way:
         _score = gamestate.get_score()
-        return _score
+        return _score 
 
-    def get_best_score(self, gamestate, scorelist):
-        max_score = max(scorelist)
-        _index = scorelist.index(max_score)
-        return max_score, _index
-
-    def get_best_clone(self, clonelist, index):
-        bestgs = clonelist[index]
-        bestgs.clone(False)
-        return bestgs
-
-    def get_best_postion(self, gamestate):
-        bestpos, _ = gamestate.get_falling_block_position()
-        return bestpos     
-
-    def get_best_angle(self, gamestate):
-        bestang = gamestate.get_falling_block_angle()
-        return bestang     
+    def real_move(self, gamestate, pos, rot, position, angle):
+        if pos < position:
+            gamestate.move(Direction.RIGHT)
+        elif pos > position:
+            gamestate.move(Direction.LEFT)
+        if rot < angle:
+            gamestate.rotate(Direction.RIGHT) # clockwised 
+        elif rot > angle:
+            gamestate.rotate(Direction.LEFT) # anti-clockwised 
 
     def get_height(self, gamestate):
         pass
