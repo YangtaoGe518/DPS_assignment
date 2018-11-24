@@ -19,6 +19,10 @@ class AutoPlayer():
         r = gamestate.get_falling_block_angle()
 
         self.real_move(gamestate, x, r, position, angle)
+        tilescopy = gamestate.get_tiles()
+        print(tilescopy)
+        _height = self.get_column_height(gamestate, 3)
+
         
     def random_next_move(self, gamestate):
         ''' make a random move and a random rotation.  Not the best strategy!
@@ -111,18 +115,6 @@ class AutoPlayer():
             return self.score_position(gamestate)
         return self.try_move(gamestate,target_pos,target_rot) # recursion until landed 
 
-    def score_position(self, gamestate):
-        """ here is the function to get the score for every cloned gamestate
-        
-            we consider three perspectives:
-            * height
-            * how many holes
-            * Variance (not now)
-        """ 
-        # the simplest way:
-        _score = gamestate.get_score()
-        return _score 
-
     def real_move(self, gamestate, pos, rot, position, angle):
         if pos < position:
             gamestate.move(Direction.RIGHT)
@@ -133,8 +125,50 @@ class AutoPlayer():
         elif rot > angle:
             gamestate.rotate(Direction.LEFT) # anti-clockwised 
 
+    def score_position(self, gamestate):
+        """ here is the function to get the score for every cloned gamestate
+        
+            we consider three perspectives:
+            * height
+            * how many holes
+            * Variance (not now)
+        """ 
+        # the simplest way:
+        _score = gamestate.get_score()
+        return _score    
+
     def get_height(self, gamestate):
+        _, _y = gamestate.get_falling_block_position()
+        r = 0 
+        height = 0
+        while r < _y and self.is_empty_row(gamestate):
+            r = r + 1
+        height = _y - r
+        return height     
+
+    def is_empty_row(self, gamestate):
+        """ the helper function of get_height """
+        _, _y = gamestate.get_falling_block_position()
+        _tilescopy = gamestate.get_tiles()
+        for c in range (0, 10):   # 20 here is the maximum row
+            if (_tilescopy[_y][c] != 0):
+                return False
+        return True   
+
+    def get_aggregate_height(self, gamestate):
         pass
+    
+    def get_column_height(self, gamestate, column):
+        """ the helper function of get_aggregate and bumpness """
+        tilescopy = gamestate.get_tiles()
+        r = 0
+        for r in range (0, column):
+            if tilescopy[r][column] != 0:
+                r = r + 1
+        columnHeight = column - r
+        print(columnHeight)
+        return columnHeight
+    
 
     def get_holes(self, gamestate):
         pass        
