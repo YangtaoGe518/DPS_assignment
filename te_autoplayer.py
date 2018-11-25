@@ -6,10 +6,18 @@ from te_settings import Direction
 maxRow = 20
 maxColumn = 10
 
-heightWeight = - 0.51006
+heightWeight1 = - 0.51006
+lineWeight1 = 0.760666
+holeWeight1 = - 0.35663
+bumpinessWeight = - 0.184483 
 scoreWeight = 0.160666
-holesWeight = - 0.35663
-bumpinessWeight = - 0.184483
+
+heightWeight2 = -3.78
+holeWeight2 = -2.31
+blockadeWeight = - 0.59
+lineWeight2 = 1.6
+wallWeight = 6.52
+floorWeight = 0.65
 
 class AutoPlayer():
     ''' A very simple dumb AutoPlayer controller '''
@@ -26,8 +34,9 @@ class AutoPlayer():
         x, _ = gamestate.get_falling_block_position()
         r = gamestate.get_falling_block_angle()
 
-        self.real_move(gamestate, x, r, position, angle)       
-        self.get_score_difference(gamestate)
+        self.real_move(gamestate, x, r, position, angle)    
+        """ clearline = self.get_clear_lines(gamestate)
+        print(clearline) """
 
     def random_next_move(self, gamestate):
         ''' make a random move and a random rotation.  Not the best strategy!
@@ -89,7 +98,7 @@ class AutoPlayer():
                     _max_score = score
                     position = pos
                     angle = rot
-        # print (score)
+        print (score)
         return position, angle
 
         """ here need pass all the parameters that you need in the test
@@ -141,15 +150,29 @@ class AutoPlayer():
             * Variance (not now)
         """ 
         # the simplest way:
-        # score = gamestate.get_score()
+        """ score = gamestate.get_score() """
 
         # more complex way:
+        
         gamescore = gamestate.get_score()
         aggregate = self.get_aggregate_height(gamestate)
         bumpiness = self.get_bumpiness(gamestate)
-        holes = self.get_holes(gamestate)
+        holes = self.get_holes(gamestate) 
+        lines = self.get_clear_lines(gamestate)
 
-        score = heightWeight * aggregate + scoreWeight * gamescore + bumpinessWeight * bumpiness + holesWeight * holes
+        score1 = heightWeight1 * aggregate + bumpinessWeight * bumpiness + holeWeight1 * holes + lineWeight1 * lines  + scoreWeight * gamescore 
+        
+        # another way:
+        height = self.get_aggregate_height(gamestate)
+        holes = self.get_holes(gamestate)
+        blockade = self.get_blockades(gamestate)
+        lines = self.get_clear_lines(gamestate)
+        wall = self.touch_egde(gamestate)
+        floor = self.touch_floor(gamestate) 
+        
+        score2 = heightWeight2 * height + holeWeight2 * holes + blockadeWeight * blockade + lineWeight2 * lines + wallWeight * wall + floorWeight * floor
+        
+        score = score1
         return score    
 
     def get_aggregate_height(self, gamestate):
@@ -208,7 +231,7 @@ class AutoPlayer():
                 elif _tilescopy[r][c] != 0 and hole:
                     count = count + 1
                 r = r - 1
-        print (count)
+        # print (count)
         return count
 
     def touch_egde (self, gamestate):
@@ -233,38 +256,49 @@ class AutoPlayer():
         # print (count)
         return count
 
-    def get_score_difference (self, gamestate):
-        """ the function obtain the score difference between two frames """ 
-        # obtain the current score first
-        currentScore = gamestate.get_score()
-        # get next score by cloning a game
-        clonegs = gamestate.clone(True)
-        newScore = self.move_one_frame(clonegs, False)
-        scoreDif = newScore - currentScore
-        print (scoreDif)
-        return scoreDif
-    
-    def move_one_frame(self, gamestate, newframe):
-        """ the helper function for get_socre_difference """
-        if newframe:
-            _newScore = gamestate.get_score()
-            return _newScore
-        # newframe = True
-        return self.move_one_frame(gamestate, True) # recursion once
-        
     def get_clear_lines(self,gamestate):
         scoreDif = self.get_score_difference(gamestate)
 
-        if scoreDif >= 100 and scoreDif < 200:
+        if scoreDif < 100:
+            return 0
+        elif scoreDif > 100 and scoreDif < 200:
+            # print (True)
             return 1
-        elif scoreDif >= 200 and scoreDif < 400:
+        elif scoreDif > 200 and scoreDif < 400:
             return 2
-        elif scoreDif >= 400 and scoreDif <800:
+        elif scoreDif > 400 and scoreDif <800:
             return 3
-        elif scoreDif >= 800 and scoreDif < 1600:
-            return 4
+        elif scoreDif > 800 and scoreDif < 1600:
+            return 4  
         else:
-            return 5     
+            return 5 
+        
+
+    def get_score_difference(self, gamestate):
+        currentScore = gamestate.get_score()
+        futureScore = self.get_future_score(gamestate)
+
+        scoreDifference = futureScore - currentScore
+        # print (scoreDifference)
+        return scoreDifference
+    
+    def get_future_score (self, gamestate):
+        """ the helper function for get_score_difference """ 
+        # get next score by cloning a game
+        clonegs = gamestate.clone(True)
+        newScore = self.move_to_land(clonegs)
+        # print (newScore)
+        return newScore
+    
+    def move_to_land(self, gamestate):
+        """ the helper function for get_future_score """
+        is_landed = gamestate.update()        
+        if is_landed:
+            _newScore = gamestate.get_score()
+            return _newScore
+        return self.move_to_land(gamestate) # recursion once
+        
+    
     
 
     
