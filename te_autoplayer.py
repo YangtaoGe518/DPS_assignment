@@ -7,7 +7,7 @@ maxRow = 20
 maxColumn = 10
 
 heightWeight = - 0.51006
-scoreWeight = 0.760666
+scoreWeight = 0.160666
 holesWeight = - 0.35663
 bumpinessWeight = - 0.184483
 
@@ -21,15 +21,14 @@ class AutoPlayer():
         ''' next_move() is called by the game, once per move.
             gamestate supplies access to all the state needed to autoplay the game.'''
         # self.random_next_move(gamestate)
-   
         position, angle = self.cloned_game(gamestate)
     
         x, _ = gamestate.get_falling_block_position()
         r = gamestate.get_falling_block_angle()
 
-        self.real_move(gamestate, x, r, position, angle)
+        self.real_move(gamestate, x, r, position, angle)       
+        self.get_score_difference(gamestate)
 
-        
     def random_next_move(self, gamestate):
         ''' make a random move and a random rotation.  Not the best strategy!
             but I use it to test the gamestate functions '''
@@ -80,6 +79,8 @@ class AutoPlayer():
     def cloned_game(self, gamestate):
         """ make 40 copies of clones """
         _max_score = 0
+        position = 0
+        angle = 0
         for pos in range (0,10): # 10 columns here --- 9 movements
             for rot in range (0,4): # 4 states of rotation ---3 rotations
                 testgs = gamestate.clone(True)
@@ -88,15 +89,14 @@ class AutoPlayer():
                     _max_score = score
                     position = pos
                     angle = rot
-        print (score)
+        # print (score)
         return position, angle
-
 
         """ here need pass all the parameters that you need in the test
             gamestate e.g. score, position rotation, all of them make a
             cloned game i.e. have the same values in all parameter
         """ 
-        
+
     def try_move(self, gamestate, target_pos, target_rot):
         """ trymove function is where we test different situations 
             in other words, it is not actually moving 
@@ -141,7 +141,7 @@ class AutoPlayer():
             * Variance (not now)
         """ 
         # the simplest way:
-        # _score = gamestate.get_score()
+        # score = gamestate.get_score()
 
         # more complex way:
         gamescore = gamestate.get_score()
@@ -186,34 +186,96 @@ class AutoPlayer():
         _tilescopy = gamestate.get_tiles()
         count = 0        
         for c in range (0, maxColumn):
-            hole = False
+            block = False
             for r in range (0, maxRow):
                 if (_tilescopy[r][c] != 0):
-                    hole = True
-                elif (_tilescopy[r][c] == 0 and hole):
+                    block = True
+                elif (_tilescopy[r][c] == 0 and block):
                     count = count + 1
         # print (count)            
         return count
     
-    def is_line(self, tilescopy):
-        pass
-
-    def convert_into_num(self, gamestate):
-        """ the helper funtion of is_line """
+    def get_blockades (self, gamestate):
+        """ the function gets how many blocks are above holes """
         _tilescopy = gamestate.get_tiles()
+        count = 0 
+        for c in range (0, maxColumn):
+            hole = False
+            r = maxRow - 1
+            while r >= 0:
+                if _tilescopy[r][c] == 0:
+                    hole = True
+                elif _tilescopy[r][c] != 0 and hole:
+                    count = count + 1
+                r = r - 1
+        print (count)
+        return count
+
+    def touch_egde (self, gamestate):
+        """ the function gets how many blocks touch the egde of the canvas """
+        _tilescopy = gamestate.get_tiles()
+        count = 0
         for r in range (0, maxRow):
-            for c in range (0, maxColumn):
-                pass
+            if _tilescopy[r][0] != 0:
+                count = count + 1
+            if _tilescopy[r][9] != 0:
+                count = count + 1
+        # print (count)
+        return count
+
+    def touch_floor (self, gamestate):
+        """ the function gets how many blocks touch the floor of the canvas """
+        _tilescopy = gamestate.get_tiles()
+        count = 0
+        for c in range (0, maxColumn):
+            if _tilescopy[19][c] != 0:
+                count = count + 1
+        # print (count)
+        return count
+
+    def get_score_difference (self, gamestate):
+        """ the function obtain the score difference between two frames """ 
+        # obtain the current score first
+        currentScore = gamestate.get_score()
+        # get next score by cloning a game
+        clonegs = gamestate.clone(True)
+        newScore = self.move_one_frame(clonegs, False)
+        scoreDif = newScore - currentScore
+        print (scoreDif)
+        return scoreDif
+    
+    def move_one_frame(self, gamestate, newframe):
+        """ the helper function for get_socre_difference """
+        if newframe:
+            _newScore = gamestate.get_score()
+            return _newScore
+        # newframe = True
+        return self.move_one_frame(gamestate, True) # recursion once
+        
+    def get_clear_lines(self,gamestate):
+        scoreDif = self.get_score_difference(gamestate)
+
+        if scoreDif >= 100 and scoreDif < 200:
+            return 1
+        elif scoreDif >= 200 and scoreDif < 400:
+            return 2
+        elif scoreDif >= 400 and scoreDif <800:
+            return 3
+        elif scoreDif >= 800 and scoreDif < 1600:
+            return 4
+        else:
+            return 5     
+    
+
+    
+        
+
+        
+
+                
+
                 
                         
 
 
-                
-
-        
-
-        
-                    
-
-
-        
+                  
