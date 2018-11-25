@@ -2,6 +2,15 @@
 from random import Random
 from te_settings import Direction
 
+# global constants:
+maxRow = 20
+maxColumn = 10
+
+heightWeight = - 0.51006
+scoreWeight = 0.760666
+holesWeight = - 0.35663
+bumpinessWeight = - 0.184483
+
 class AutoPlayer():
     ''' A very simple dumb AutoPlayer controller '''
     def __init__(self, controller):
@@ -19,9 +28,6 @@ class AutoPlayer():
         r = gamestate.get_falling_block_angle()
 
         self.real_move(gamestate, x, r, position, angle)
-        tilescopy = gamestate.get_tiles()
-        print(tilescopy)
-        _height = self.get_column_height(gamestate, 3)
 
         
     def random_next_move(self, gamestate):
@@ -82,6 +88,7 @@ class AutoPlayer():
                     _max_score = score
                     position = pos
                     angle = rot
+        print (score)
         return position, angle
 
 
@@ -134,45 +141,75 @@ class AutoPlayer():
             * Variance (not now)
         """ 
         # the simplest way:
-        _score = gamestate.get_score()
-        return _score    
+        # _score = gamestate.get_score()
 
-    def get_height(self, gamestate):
-        _, _y = gamestate.get_falling_block_position()
-        r = 0 
-        height = 0
-        while r < _y and self.is_empty_row(gamestate):
-            r = r + 1
-        height = _y - r
-        return height     
+        # more complex way:
+        gamescore = gamestate.get_score()
+        aggregate = self.get_aggregate_height(gamestate)
+        bumpiness = self.get_bumpiness(gamestate)
+        holes = self.get_holes(gamestate)
 
-    def is_empty_row(self, gamestate):
-        """ the helper function of get_height """
-        _, _y = gamestate.get_falling_block_position()
-        _tilescopy = gamestate.get_tiles()
-        for c in range (0, 10):   # 20 here is the maximum row
-            if (_tilescopy[_y][c] != 0):
-                return False
-        return True   
+        score = heightWeight * aggregate + scoreWeight * gamescore + bumpinessWeight * bumpiness + holesWeight * holes
+        return score    
 
     def get_aggregate_height(self, gamestate):
-        pass
+        total = 0
+        for c in range (0, maxColumn):
+            _columnHeight = self.get_column_height(gamestate,c)
+            total = total + _columnHeight
+        # print(total)
+        return total
     
+    def get_bumpiness(self, gamestate):
+        total = 0
+        for c in range (0, maxColumn - 1):
+            _columnHeight1 = self.get_column_height(gamestate, c)
+            _columnHeight2 = self.get_column_height(gamestate, c+1)
+            _bumpiness = abs(_columnHeight1 - + _columnHeight2)
+            total = total + _bumpiness
+        # print(total)
+        return total
+
     def get_column_height(self, gamestate, column):
         """ the helper function of get_aggregate and bumpness """
-        tilescopy = gamestate.get_tiles()
-        r = 0
-        for r in range (0, column):
-            if tilescopy[r][column] != 0:
-                r = r + 1
-        columnHeight = column - r
-        print(columnHeight)
+        _tilescopy = gamestate.get_tiles()
+        count = 0
+        for r in range (0, maxRow):
+            if _tilescopy[r][column] != 0:
+                count = count + 1
+        columnHeight = count
+        # print(columnHeight)
         return columnHeight
     
 
     def get_holes(self, gamestate):
-        pass        
-        
+        _tilescopy = gamestate.get_tiles()
+        count = 0        
+        for c in range (0, maxColumn):
+            hole = False
+            for r in range (0, maxRow):
+                if (_tilescopy[r][c] != 0):
+                    hole = True
+                elif (_tilescopy[r][c] == 0 and hole):
+                    count = count + 1
+        # print (count)            
+        return count
+    
+    def is_line(self, tilescopy):
+        pass
+
+    def convert_into_num(self, gamestate):
+        """ the helper funtion of is_line """
+        _tilescopy = gamestate.get_tiles()
+        for r in range (0, maxRow):
+            for c in range (0, maxColumn):
+                pass
+                
+                        
+
+
+                
+
         
 
         
