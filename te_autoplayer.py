@@ -9,15 +9,22 @@ maxColumn = 10
 heightWeight1 = - 0.51006
 lineWeight1 = 0.760666
 holeWeight1 = - 0.35663
-bumpinessWeight = - 0.184483 
-scoreWeight = 0.160666
+bumpinessWeight1 = - 0.184483 
+scoreWeight1 = 0.160666
 
 heightWeight2 = -3.78
 holeWeight2 = -2.31
-blockadeWeight = - 0.59
+blockadeWeight2 = - 0.59
 lineWeight2 = 1.6
-wallWeight = 6.52
-floorWeight = 0.65
+wallWeight2 = 6.52
+floorWeight2 = 0.65
+
+heightWeight3 = -1
+lineWeight3 = 20
+holeWeight3 = -2
+bumpinessWeight3 = -0.5
+blockadeWeight3 = -0.1
+floorWeight3 = 1
 
 class AutoPlayer():
     ''' A very simple dumb AutoPlayer controller '''
@@ -34,7 +41,8 @@ class AutoPlayer():
         x, _ = gamestate.get_falling_block_position()
         r = gamestate.get_falling_block_angle()
 
-        self.real_move(gamestate, x, r, position, angle)    
+        self.real_move(gamestate, x, r, position, angle)
+        print (position, angle)
         """ clearline = self.get_clear_lines(gamestate)
         print(clearline) """
 
@@ -87,18 +95,32 @@ class AutoPlayer():
 
     def cloned_game(self, gamestate):
         """ make 40 copies of clones """
-        _max_score = 0
+        _max_score = - 100000
         position = 0
-        angle = 0
-        for pos in range (0,10): # 10 columns here --- 9 movements
-            for rot in range (0,4): # 4 states of rotation ---3 rotations
-                testgs = gamestate.clone(True)
-                score = self.try_move(testgs, pos, rot)
-                if score > _max_score:
-                    _max_score = score
-                    position = pos
-                    angle = rot
-        print (score)
+        angle = 0 
+        _type = gamestate.get_falling_block_type()
+
+        if _type == "I" or _type == "O":     #check whether it is 4 * 4 
+            for pos in range (-1, 10):
+                for rot in range (0, 4):
+                    testgs = gamestate.clone(True)
+                    score = self.try_move(testgs, pos, rot)
+                    if score > _max_score:
+                        _max_score = score
+                        position = pos
+                        angle = rot
+
+        else:
+            for pos in range (0,10): # 10 columns here --- 9 movements
+                for rot in range (0,4): # 4 states of rotation ---3 rotations
+                    testgs = gamestate.clone(True)
+                    score = self.try_move(testgs, pos, rot)
+                    if score > _max_score:
+                        _max_score = score
+                        position = pos
+                        angle = rot
+            
+        print (_max_score)
         return position, angle
 
         """ here need pass all the parameters that you need in the test
@@ -160,7 +182,7 @@ class AutoPlayer():
         holes = self.get_holes(gamestate) 
         lines = self.get_clear_lines(gamestate)
 
-        score1 = heightWeight1 * aggregate + bumpinessWeight * bumpiness + holeWeight1 * holes + lineWeight1 * lines  + scoreWeight * gamescore 
+        score1 = heightWeight1 * aggregate + bumpinessWeight1 * bumpiness + holeWeight1 * holes + lineWeight1 * lines
         
         # another way:
         height = self.get_aggregate_height(gamestate)
@@ -170,8 +192,11 @@ class AutoPlayer():
         wall = self.touch_egde(gamestate)
         floor = self.touch_floor(gamestate) 
         
-        score2 = heightWeight2 * height + holeWeight2 * holes + blockadeWeight * blockade + lineWeight2 * lines + wallWeight * wall + floorWeight * floor
+        score2 = heightWeight2 * height + holeWeight2 * holes + blockadeWeight2 * blockade + lineWeight2 * lines + wallWeight2 * wall + floorWeight2 * floor
         
+        # my way:
+        score3 = heightWeight3 * height + holeWeight3 * holes + blockadeWeight3 * blockade + lineWeight3 * lines + floorWeight3 * floor
+
         score = score1
         return score    
 
@@ -273,7 +298,6 @@ class AutoPlayer():
         else:
             return 5 
         
-
     def get_score_difference(self, gamestate):
         currentScore = gamestate.get_score()
         futureScore = self.get_future_score(gamestate)
@@ -297,7 +321,16 @@ class AutoPlayer():
             _newScore = gamestate.get_score()
             return _newScore
         return self.move_to_land(gamestate) # recursion once
-        
+
+    def special_case_check(self, gamestate):
+        _falling_block = gamestate.get_falling_block_type()
+        if _falling_block == "I" or _falling_block == "O":
+            return True
+        else:
+            return False
+
+
+
     
     
 
