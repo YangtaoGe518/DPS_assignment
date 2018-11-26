@@ -164,25 +164,18 @@ class AutoPlayer():
             gamestate.rotate(Direction.LEFT) # anti-clockwised 
 
     def score_position(self, gamestate):
-        """ here is the function to get the score for every cloned gamestate
-        
-            we consider three perspectives:
-            * height
-            * how many holes
-            * Variance (not now)
-        """ 
+        """ here is the function to get the score for every cloned gamestate """ 
         # the simplest way:
         """ score = gamestate.get_score() """
 
         # more complex way:
-        
         gamescore = gamestate.get_score()
         aggregate = self.get_aggregate_height(gamestate)
         bumpiness = self.get_bumpiness(gamestate)
         holes = self.get_holes(gamestate) 
         lines = self.get_clear_lines(gamestate)
 
-        score1 = heightWeight1 * aggregate + bumpinessWeight1 * bumpiness + holeWeight1 * holes + lineWeight1 * lines
+        score1 = heightWeight1 * aggregate + bumpinessWeight1 * bumpiness + holeWeight1 * holes + lineWeight1 * lines + scoreWeight1 * gamescore
         
         # another way:
         height = self.get_aggregate_height(gamestate)
@@ -194,8 +187,11 @@ class AutoPlayer():
         
         score2 = heightWeight2 * height + holeWeight2 * holes + blockadeWeight2 * blockade + lineWeight2 * lines + wallWeight2 * wall + floorWeight2 * floor
         
-        # my way:
+        # my way 1:
         score3 = heightWeight3 * height + holeWeight3 * holes + blockadeWeight3 * blockade + lineWeight3 * lines + floorWeight3 * floor
+
+    	# my way 2: 
+        """ use selcting way to get the best score """
 
         score = score1
         return score    
