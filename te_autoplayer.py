@@ -21,7 +21,7 @@ floorWeight2 = 0.65
 
 heightWeight3 = -1
 lineWeight3 = 20
-holeWeight3 = -2
+holeWeight3 = -1
 bumpinessWeight3 = -0.5
 blockadeWeight3 = -0.1
 floorWeight3 = 1
@@ -100,7 +100,16 @@ class AutoPlayer():
         angle = 0 
         _type = gamestate.get_falling_block_type()
 
-        if _type == "I" or _type == "O":     #check whether it is 4 * 4 
+        if _type == "I" :                    #check whether the type is "I"
+            for pos in range (-2, 10):
+                for rot in range (0, 4):
+                    testgs = gamestate.clone(True)
+                    score = self.try_move(testgs, pos, rot)
+                    if score > _max_score:
+                        _max_score = score
+                        position = pos
+                        angle = rot
+        elif _type == "O":
             for pos in range (-1, 10):
                 for rot in range (0, 4):
                     testgs = gamestate.clone(True)
@@ -109,7 +118,6 @@ class AutoPlayer():
                         _max_score = score
                         position = pos
                         angle = rot
-
         else:
             for pos in range (0,10): # 10 columns here --- 9 movements
                 for rot in range (0,4): # 4 states of rotation ---3 rotations
@@ -192,8 +200,12 @@ class AutoPlayer():
 
     	# my way 2: 
         """ use selcting way to get the best score """
-
-        score = score1
+        if gamescore < 1000:
+            score4 = 0.55 * gamescore - 0.55 * holes - 0 * bumpiness
+        else:
+            score4 = 0.0018 * gamescore - 5 * holes - 1 * aggregate - 0.6 * bumpiness
+        
+        score = score4
         return score    
 
     def get_aggregate_height(self, gamestate):
@@ -209,7 +221,7 @@ class AutoPlayer():
         for c in range (0, maxColumn - 1):
             _columnHeight1 = self.get_column_height(gamestate, c)
             _columnHeight2 = self.get_column_height(gamestate, c+1)
-            _bumpiness = abs(_columnHeight1 - + _columnHeight2)
+            _bumpiness = abs(_columnHeight1 - _columnHeight2)
             total = total + _bumpiness
         # print(total)
         return total
